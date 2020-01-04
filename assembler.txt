@@ -1,0 +1,63 @@
+.model tiny
+org 100h
+.DATA
+Success DB 'ALL',13,10,'$' 
+Fail DB 'Not ALL',13,10,'$' 
+AnswerFib DB 'fib',13,10,'$'    
+AnswerNotFib DB 'Not fib',13,10,'$'
+Arr dw 1,1,2,3,5 ;mas
+n dw 5 ;size mas
+a dw -1 ;left side
+b dw 310 ;right side   
+s dw 0
+.CODE 
+start: lea di,Arr ; in di adress Arr[1]
+mov ax,a
+mov bx,b
+mov cx,n  
+
+;mov bp,s 
+mov dx,s 
+check:       
+
+add dx,[di]
+;add dx,[di+1] 
+cmp [di+1],dx  
+jne NotZero
+;mov dx,OFFSET  AnswerFib
+;jmp print
+;je Yes
+dec cx
+add di,2
+add dx,0
+jg check 
+
+mov dx,OFFSET AnswerFib
+jmp print
+NotZero:  mov dx,OFFSET AnswerNotFib
+print: mov ah,9 
+int 21h 
+mov ah,4ch 
+int 21h
+ret
+
+
+comment * cmp [di],ax 
+jl No ; if arr[i]<a
+cmp [di],bx 
+jg No ; if arr[i]>b
+dec cx ; ? cx count not check elem
+add di,2 ; in di adress next elem Arr
+cmp cx,0 
+jg check ; if n>0 
+mov dx,OFFSET Success ; ???? ????? ?? ????? ????? - ?????? ?? 
+jmp print 
+No: mov dx,OFFSET Fail 
+print: mov ah,9 ; adress dx
+int 21h 
+mov ah,4ch 
+int 21h
+ret      *
+
+
+end start

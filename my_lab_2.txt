@@ -1,0 +1,322 @@
+.model tiny                   ;iiaaeu tiny i?aaiacia?aia aey nicaaiey oaeeia oeia com
+.code	                      ;yoa ae?aeoeaa ia?eiaao naaiaio eiaa
+org 100h                      ;eiiaiaa onoaiaaeeaaao cia?aiia i?ia?aiiiiai n?ao?eea a 100h                             
+ 
+Start:	
+ 
+;-----------------------------------------------------------------
+;aaia eie-aa yeaiaioia ianneaa   
+
+    ;aaia iianeacee  'aaaaeoa ?acia?'
+	mov	ah,09h              ;iiia? ooieoee a dos- a AH auaiaei no?iee ia ye?ai
+	lea	dx,text1            ;no?iea iianeacea 'aaaaeoa ?acia?'
+	int	21h	                ;aucia ooieoee  
+	  
+	;n?eouaaiea aaaaaiiiai ?enea a ax e iiiauaiea aai a n  
+    call ReadInteger		;aaia n eeaaeaoo?, eiiaa?oe?oao a int 
+	mov	n,ax				;caiiiieou ?enei yeaiaioia ianneaa
+    
+    ;ia?aaia no?iee
+	mov ah,09h			  
+	lea dx,crlf
+	int 21h   
+	
+	;aaia iianeacee  'n='
+	mov ah,09h    			
+	lea dx,resn             ;no?iea-iianeacea 'n='
+	int 21h   
+	
+    ;auaia n
+    mov ax,n                ;iiiauaai n a ax
+    call WriteInteger		;i?aia?aciaaiea a neiaie e auaia ia ye?ai
+    
+    ;ia?aaia no?iee
+	mov ah,09h				
+	lea dx,crlf
+	int 21h
+
+
+;-----------------------------------------------------------------	
+;aaia yeaiaioia ianneaa      
+
+	lea	di,mas			    ;aa?an ia?aiai yeaiaioa
+    
+    ;aaia iianeacee  'Aaaaeoa yeaiaiou'
+	mov	ah,09h
+	lea	dx,text2            ;iianeacea 'Aaaaeoa yeaiaiou'
+	int	21h                 
+	
+	mov	bx,0	
+	
+masi: 
+
+    call ReadInteger		;aaia n eeaaeaoo?, eiiaa?oe?oao a int 
+
+	mov	[di],ax				;caiiieiaai yeaiaio ianneaa
+	add	di,2				;iiaaioiaea aa?ana neaao?uaai yeaiaioa
+    
+    ;ia?aaia no?iee
+	mov ah,09h
+	lea dx,crlf
+	int 21h
+
+	inc	bx                  ;oaaee?eaaai bx
+	cmp	bx,n                ;n?aaieaaai n n 
+	jb	masi                ;anee bx < n - i?iaie?aai aaiaeou. Anee ia eiiao ianneaa
+
+
+;----------------------------------------------------------	
+;auaia yeaiaioia ianneaa	
+	lea	di,mas			
+	mov	ah,09h
+	lea	dx,text3            ;iianeacea 'Iannea'
+	int	21h         
+	
+	mov	bx,0   
+	
+
+maso:
+	mov ax,[di]             ;caiiieiaai ia?aue yeaiaio ianneaa
+	add	di,2				;naaeaaai
+    call WriteInteger		;ia?aoaai ?enei
+           
+    ;ia?aaia no?iee
+	mov ah,09h				
+	lea dx,crlf
+	int 21h
+
+	inc	bx                  ;oaaee?eaaai bx
+	cmp	bx,n                ;n?aaieaaai n n 
+	jb	maso                ;anee bx < n - i?iaie?aai auaiaeou. Anee ia eiiao ianneaa
+
+    ;nio?aieou ia?aiao?u a noaea
+	lea	bp,mas
+	push bp
+	mov	bp,n
+	push bp
+     
+    ;aucia iniiaiie i?ioaao?u
+	call work	
+	ret	  
+	
+;-----------------------------------------------------------------
+;aeaaiay i?ioaao?a
+work proc 
+
+    push bp				;nio?aiyai bp
+    mov bp, sp
+    push ax				;nio?aiyai ?aaeno?u 
+    push cx
+    push dx
+    push si	
+	 
+	mov di, [bp+4]   ;caiinei a cx aeeio ianneaa
+	mov cx, di
+	
+	mov di,[bp+6]    ;caiinei a si oe ia ia?aei ianneaa
+	mov si, di 
+	
+INITIAL: 
+  cmp cx,0
+  je NO
+  mov ax,[si]   
+  add si,2
+  mov bx,[si]      
+  add si,2  
+  
+CHECK:                
+mov dx,[si]  
+add si,2     
+dec cx     
+add ax,bx
+cmp ax,dx 
+
+jne NO        ;if cmp <> 0  
+cmp [si],0    ;anee aioee ai eiioa ianneaa              
+je Yes  
+jne COMP
+jmp CHECK
+  
+COMP: 
+mov ax,bx     ;  last = current   
+mov bx,dx    ;  current = next
+jmp CHECK
+ 
+STRCOMP: 
+cmp si,n  
+je  YES
+     
+YES:
+mov ah,9
+mov dx,offset StrYes
+int 21h   
+jmp Final 
+ 
+NO:
+mov ah,9
+mov dx,offset StrNo
+int 21h
+jmp Final 
+                 
+Final: 
+	pop si
+	pop dx		        ;ainnoaiaaeeaaai ?aaeno?u
+	pop cx
+	pop ax
+	mov sp, bp
+	pop bp
+	mov ah,4ch	     
+	
+work EndP 	
+
+;----------------------------------------------------------------
+;aaia ?enea a ax    
+
+ReadInteger proc  
+	push cx            ;nio?aiyai ?aaeno?
+	push bx
+ 	push dx 
+ 	mov fl,0           ;oeaa io?eoaoaeuiiai ?enea
+ 	xor cx, cx  
+ 	mov bx, 10 
+  	call ReadChar      ;aaia ia?aiai neiaiea, ia?auaiea e i?ioaao?a i?i?oaiey iaiiai ?enea 
+
+ 	cmp al,'-'         ;anee ieion 
+ 	je nnn             ;oi a iaoea nnn onoaiaaeeaaai oeaa
+ 	
+	jmp nn             ;anee iao oi e iaoea nn
+	
+;onoaiaaeeaaai oeaa io?eoaoaeuiiai ?enea
+nnn:
+ 	mov fl,1
+
+;aaia neaao?uaai neiaiea    
+read:  
+ 	call ReadChar      ;ia?auaiea e i?ioaao?a i?i?oaiey iaiiai ?enea 
+
+ 	
+nn: cmp al, 13        ;Enter ?
+    je done           ;anee aa, oi caaa?oaiea
+    
+    sub al, '0'       ;anee iao, oi ia?aaia ec neiaiea a int
+    xor ah, ah  
+    xor dx, dx   
+    xchg cx, ax  
+    mul bx  
+    add ax, cx  
+    xchg ax, cx   
+    	
+    jmp read          ;aaia neaao?uaai neiaiea, caoai ia?aoii aic?auaainy n?aa ?a
+
+done:  
+    xchg ax, cx  
+    cmp fl,1          ;anee anou oeaa io?eoaoaeuiiai
+    je negat          ;ia?aoiaei e iaoea negat e aaeaai aai io?eoaoaeuiui
+    	
+    jmp norm          ;eia?a a iaoeo norm  
+    	
+;aaeaai  ?enei io?eoaoaeuiui
+negat:
+    neg ax    
+    	
+norm: 
+ 	pop dx            ;ainnoaiaaeeaaai ?aaeno?u
+    pop bx  
+    pop cx 
+    ret  
+ReadInteger endp  
+
+;----------------------------------------------------------------
+; aaia iaiiai neiaiea  
+ReadChar proc  
+    	mov ah,1 
+    	int 21h 
+    	ret  
+ReadChar endp
+
+;--------------------------------------------------------------- 
+ 
+;auaia ?enea
+WriteInteger proc near 
+    push ax           ;nio?aiyai ?aaeno?u
+    push cx  
+    push bx  
+    push dx  
+    xor cx, cx  
+    mov bx, 10     
+    
+;i?iaa?ea ia io?eoaoaeuiinou   
+    cmp ax,0
+    jl ddd	          ;aa
+    
+    jmp divl	      ;iao   
+    
+;auaanoe ieion e iiiaiyou ciae
+ddd:
+    push ax
+    mov dl, '-'  
+    mov ah, 2  
+    int 21h
+    pop ax
+    neg ax  
+
+;iieo?eou 10-oeo?u e iiianoeou eo a noae,
+;a cx - eiee?anoai iieo?aiiuo oeo?
+divl:  
+    xor dx, dx  
+    idiv bx  
+    push dx  
+    inc cx  
+    cmp ax,0         ;if ax > 0 - i?iaie?aai i?aia?aciaaiea
+    jg  divl  
+
+;ainoaou ec noaea, ia?aaanoe a eia ASCII e auaanoe
+popl:  
+    pop ax  
+    add al, '0'      ;i?aia?aciaaiea a neiaie
+    call WriteChar   ;ia?auaiea e i?ioaao?a auaiaa iaiiai neiaiea
+    loop popl  
+
+    pop dx           ;ainnoaiaaeeaaai ?aaeno?u
+   	pop bx  
+    pop cx  
+   	pop ax 
+    ret  
+WriteInteger endp  
+
+;-------------------------------------------------------------
+;auaia iaiiai neiaiea 
+WriteChar proc  
+    push ax  
+    push dx  
+    mov dl, al  
+    mov ah, 2  
+    int 21h  
+    pop dx  
+    pop ax  
+    ret
+WriteChar endp      
+
+;-------------------------------------------------------------  
+
+jmp Start   
+
+n	dw	10		;?enei yeaiaioia ianneaa
+fl 	dw 	?		;oeaa io?eoaoaeuiiai ?enea
+
+StrYes db "FIB: YES",13,10,"$"     
+StrNo db "FIB: NO",13,10,"$"       
+
+text1	db	'input size >  ','$'
+text2	db	'input elem',0dh,0ah,'$'
+text3	db	'array',0dh,0ah,'$'
+
+resn	db	'n= ','$'
+res	db	'   ','$'
+crlf	db  0dh,0ah,'$'
+
+mas	dw	50 DUP(?)
+
+end _START   
+
+ret
